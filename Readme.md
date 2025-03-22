@@ -1,6 +1,3 @@
-Here’s a **professional and detailed `README.md` file** with an explanation of the code, algorithms used, steps to run locally, deployment guide, and API requests.
-
----
 
 ## 📚 **URL Shortener Project**
 
@@ -226,8 +223,4 @@ MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/url-shortener
 
 ## 🎉 **Conclusion**
 You now have a fully functional URL shortener service deployed on Render!  
-Feel free to enhance the project by adding custom expiry options, analytics, and more. 🚀
 
----
-
-✅ **Ready to Go!** Let me know if you encounter any issues during deployment or testing! 😊

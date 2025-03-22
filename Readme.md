@@ -182,18 +182,3 @@ MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/urlshortener?r
 
 ---
 
-## 📈 **Future Enhancements**
-
-✅ Custom URL expiration options.  
-✅ Track detailed analytics (country, device, etc.).  
-✅ Scale to handle millions of requests.  
-
----
-
-## 📄 **License**
-This project is licensed under the MIT License.
-
----
-
-🎉 **Project Successfully Set Up & Deployed!**  
-Let me know if you encounter any issues! 😊

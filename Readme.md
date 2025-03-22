@@ -1,5 +1,3 @@
-🎉 **Here’s a Complete `README.md` for Your URL Shortener Project!** 🚀  
-
 ---
 
 ## 📚 **URL Shortener API**

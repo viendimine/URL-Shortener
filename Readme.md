@@ -1,184 +1,233 @@
----
-
-## 📚 **URL Shortener API**
-
-This project is a simple URL shortener built using **Node.js**, **Express**, and **MongoDB**.  
-It allows users to shorten long URLs, create custom aliases, and redirect shortened URLs to their original destinations.  
-The project also supports basic URL statistics like tracking the number of visits.
+Here’s a **professional and detailed `README.md` file** with an explanation of the code, algorithms used, steps to run locally, deployment guide, and API requests.
 
 ---
 
-## 🎯 **Project Architecture & Approach**
+## 📚 **URL Shortener Project**
 
-### 📌 **How It Works:**
-1. **Shorten URL:**  
-   - Users send a `POST /shorten` request with the original URL.
-   - A short code is generated using a utility function or a custom alias if provided.
-   - The URL and its short code are stored in the MongoDB database.
-
-2. **Redirect URL:**  
-   - A `GET /:shortCode` request redirects the user to the original URL.
-   - Visit count is incremented for every hit on the short URL.
-
-3. **Handling Edge Cases:**
-   - Duplicate aliases are checked to prevent conflicts.
-   - Expired or invalid short codes return a `404` error.
+This project is a **URL Shortener API** built using **Node.js, Express, and MongoDB**. It converts long URLs into short, easily shareable URLs and redirects them to the original URL when accessed.
 
 ---
 
-## 🚀 **Tech Stack**
+## 🚀 **Project Overview**
 
-- **Backend:** Node.js + Express.js
-- **Database:** MongoDB (hosted on MongoDB Atlas)
-- **Deployment Platform:** Render (optional: Railway / Fly.io)
+- **Shorten URL API:** Accepts a long URL and returns a shortened version.
+- **Custom Alias Support:** Allows users to create custom short URLs.
+- **Redirect URL API:** Redirects users from a short URL to the original URL.
+- **Visit Count Tracking:** Tracks the number of visits to a URL.
 
 ---
 
-## 🛠️ **Setup Instructions**
+## ⚙️ **Project Structure**
 
-### ✅ **Step 1: Clone the Repository**
+```
+GIVA
+├── controllers
+│   └── urlController.js   # Handles URL shortening and redirection logic
+├── models
+│   └── urlModel.js        # Defines URL schema and model for MongoDB
+├── routes
+│   └── urlRoutes.js       # Defines API routes and endpoints
+├── utils
+│   └── generateShortCode.js  # Generates a unique short code
+├── .env                   # Environment variables
+├── server.js              # Main server configuration
+└── package.json           # Project dependencies
+```
+
+---
+
+## 💡 **Algorithms and Code Explanation**
+
+### 1. **URL Shortening Logic**
+- When a user submits a long URL:
+  - If a custom alias is provided, the system checks if it’s available.
+  - If no alias is provided, a unique random short code is generated.
+- A new record is inserted into the MongoDB database.
+- The generated short URL is returned as a response.
+
+✅ **Key Algorithm:**  
+- Generates a random short code using `generateShortCode.js`:
+```js
+const crypto = require("crypto");
+
+// Generate a random 6-character string or use a custom alias
+const generateShortCode = (alias) => {
+  return alias || crypto.randomBytes(3).toString("hex");
+};
+
+module.exports = generateShortCode;
+```
+
+---
+
+### 2. **Redirection Logic**
+- When a user accesses a short URL:
+  - It checks if the short code exists in the database.
+  - If the record is found and the URL is not expired, it redirects the user to the original URL.
+- Visit count is incremented for each redirection.
+
+✅ **Redirection Code:**
+```js
+exports.redirectUrl = async (req, res) => {
+  const { shortCode } = req.params;
+  const url = await URL.findOne({ shortCode });
+
+  if (!url || (url.expiry && url.expiry < Date.now())) {
+    return res.status(404).json({ error: "URL not found or expired" });
+  }
+
+  // Update visit count
+  url.visitCount += 1;
+  await url.save();
+  res.redirect(url.originalUrl);
+};
+```
+
+---
+
+### 3. **Custom Alias Handling**
+- If the user provides an alias, the system checks whether the alias is already taken.
+- If not, it assigns the alias to the URL record.
+
+✅ **Alias Code:**
+```js
+if (alias) {
+  const aliasExists = await URL.findOne({ customAlias: alias });
+  if (aliasExists) {
+    return res.status(400).json({ error: "Alias is already taken" });
+  }
+}
+
+// Generate short code
+const shortCode = generateShortCode(alias);
+```
+
+---
+
+## 📦 **Installation and Setup**
+
+### 1. **Clone the Repository**
 ```bash
 git clone https://github.com/viendimine/Vishy_Url-Shortener.git
 cd Vishy_Url-Shortener
 ```
 
-### ✅ **Step 2: Install Dependencies**
+---
+
+### 2. **Install Dependencies**
 ```bash
 npm install
 ```
 
-### ✅ **Step 3: Create a `.env` File**
-Create a `.env` file in the root directory and add the following:
+---
 
+### 3. **Set Up Environment Variables**
+Create a `.env` file in the root directory with the following:
 ```
-MONGO_URI=<your_mongodb_connection_string>
-BASE_URL=http://localhost:5000
+MONGO_URI=<your-mongodb-uri>
+BASE_URL=https://your-app-name.onrender.com
 PORT=5000
 ```
 
-👉 **To Get `MONGO_URI`:**
-- Go to [MongoDB Atlas](https://www.mongodb.com/atlas/database).
-- Create a new cluster.
-- Click on `Connect` > `Connect your application`.
-- Copy the **connection string** (something like):
+✅ **Example MongoDB URI:**
 ```
-mongodb+srv://<username>:<password>@cluster.mongodb.net/urlshortener?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/url-shortener
 ```
-- Replace `<username>` and `<password>` with your credentials.
 
 ---
 
-## ▶️ **Run the Project Locally**
-
-### ✅ **Step 1: Start the Server**
+### 4. **Run the Server Locally**
 ```bash
 node server.js
 ```
-OR if you're using `nodemon`:
-```bash
-npx nodemon server.js
-```
-
-### ✅ **Step 2: Access the API**
-- Visit `http://localhost:5000` in your browser.
-- Use Postman or any API testing tool to send requests.
 
 ---
 
-## 📡 **API Endpoints & Usage**
+## 📡 **API Endpoints**
 
-### 1️⃣ **POST /shorten**
-**Request:**
+### 1. **Shorten URL**
+- **Endpoint:** `POST /shorten`
+- **Request:**
 ```json
-POST /shorten
-Content-Type: application/json
-
 {
-  "url": "https://www.example.com",
-  "alias": "customAlias"  // Optional
+  "url": "https://www.example.com/some/very/long/url",
+  "alias": "custom-alias"  // Optional
 }
 ```
-
-**Response:**
+- **Response:**
 ```json
 {
-  "shortUrl": "http://localhost:5000/customAlias"
+  "shortUrl": "https://your-app-name.onrender.com/custom-alias"
 }
 ```
 
 ---
 
-### 2️⃣ **GET /:shortCode**
-**Request:**
-```http
-GET /customAlias
+### 2. **Redirect to Original URL**
+- **Endpoint:** `GET /:shortCode`
+- **Request:**  
+Access the shortened URL in your browser:
 ```
-
-**Response:**  
-✅ Redirects to `https://www.example.com`.  
-If the URL is expired or invalid, returns:
-```json
-{
-  "error": "URL not found or expired"
-}
+https://your-app-name.onrender.com/custom-alias
 ```
+✅ It will redirect to the original URL.
 
 ---
 
-### 3️⃣ **Error Responses**
-- **400 Bad Request:** Invalid input or duplicate alias.
-- **404 Not Found:** URL not found or expired.
+## 🌐 **Deploying to Render**
 
----
-
-## 🌐 **Deployment on Render**
-
-### ✅ **Step 1: Create a GitHub Repository**
-- Push your project to GitHub using:
+### 1. **Push Code to GitHub**
 ```bash
 git add .
 git commit -m "Initial commit"
 git push origin main
 ```
 
-### ✅ **Step 2: Deploy on Render**
-1. Go to [Render](https://render.com/).
-2. Click **New Web Service**.
+---
+
+### 2. **Deploy on Render**
+1. Go to [Render Dashboard](https://dashboard.render.com/).
+2. Click on **New Web Service**.
 3. Connect your GitHub repository.
-4. Select the correct repository (`Vishy_Url-Shortener`).
-5. Set **Build Command**:
+4. Choose **Node.js** as the environment.
+5. Set the build command:
 ```bash
 npm install
 ```
-6. Set **Start Command**:
+6. Set the start command:
 ```bash
 node server.js
 ```
-7. Add environment variables:
-   - `MONGO_URI`: Your MongoDB connection string.
-   - `BASE_URL`: Your Render URL (e.g., `https://your-app.onrender.com`).
+7. Add environment variables (same as in `.env`).
 8. Click **Deploy**.
 
 ---
 
-## 🛢️ **MongoDB Cloud Setup**
+## 📝 **MongoDB Atlas Setup**
 
-### ✅ **Step 1: Create MongoDB Atlas Account**
-- Sign up at [MongoDB Atlas](https://www.mongodb.com/atlas).
-- Create a **New Cluster** (select any free tier region).
-
-### ✅ **Step 2: Set Up Database**
-1. Click on **Database Access** → Add a new database user.
-2. Add your username and password.
-3. Click on **Network Access** → Add IP address.
-4. Select **Allow Access from Anywhere**.
-
-### ✅ **Step 3: Get Connection String**
-- Click on `Connect` → `Connect your application`.
-- Copy the connection string and replace in `.env`:
+1. Sign up or log in to [MongoDB Atlas](https://www.mongodb.com/atlas).
+2. Create a new cluster.
+3. Whitelist your IP address or set to `0.0.0.0/0` for all IPs.
+4. Create a database named `url-shortener`.
+5. Add a new database user and note down the **username** and **password**.
+6. Use the connection string in your `.env` file:
 ```
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/urlshortener?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/url-shortener
 ```
 
 ---
 
+## 🎯 **Troubleshooting Tips**
+- Check if your `.env` file is properly configured.
+- Check MongoDB connection string for typos.
+- Monitor logs in Render for errors.
+
+---
+
+## 🎉 **Conclusion**
+You now have a fully functional URL shortener service deployed on Render!  
+Feel free to enhance the project by adding custom expiry options, analytics, and more. 🚀
+
+---
+
+✅ **Ready to Go!** Let me know if you encounter any issues during deployment or testing! 😊
